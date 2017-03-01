@@ -32,14 +32,14 @@
                          ))
                      {:count 0 :start nil :end nil})
              )
-        duration (t/interval (:start result) (:end result))
-        rate (float (/ (:count result) (* 1000 (t/in-millis duration))))]
+        duration (t/in-seconds (t/interval (:start result) (:end result)))
+        rate (float (/ (:count result) (max 1 duration)))]
     ; Return accumulated statistics and final average calculation
     (assoc result
       :start (.toString (:start result))
       :end (.toString (:end result))
       :rate-per-second rate
-      :duration-in-seconds (t/in-seconds duration))))
+      :duration-in-seconds duration)))
 
 (defn process-file
   "Open a log file from the given file name and return the event rate analysis"
