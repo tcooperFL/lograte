@@ -10,7 +10,7 @@ Download the jar from GitHub. You must have the java8 JRE installed to run this.
 
 Run the jar, specifying the name of the log file and options.
 
-    $ java -jar lograte-0.1.0-standalone.jar [args]
+    $ java -jar lograte-0.1.0-SNAPSHOT-standalone.jar [args]
 
 Specify a log file full pathname to read that file. If the argument begins with ``@``, then open this file and read the file names, one per line.
 If you specify the `-e` option, omit the file argument, since `-e` indicates you want to read from stdin. You can then pipe the content to it.
