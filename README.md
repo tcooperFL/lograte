@@ -20,7 +20,7 @@ To analyze the log rate of a single log file, specify just the pathname to that
 file as the only argument. If you pass a path to a folder, every file found
 in a recursive walk into that folder will be analyzed, and the results
 summarized. The optional regex is used to filter the file names when a
-folder name is given. Only those files with a full pathname matching the regex
+folder name is given. Only those non-zip files with a full pathname matching the regex
 will be included in the analysis.
 
 ## Examples
@@ -31,10 +31,10 @@ The file is read and results printed as a json string.
 $ export LOGGING=true
 $ echo $LOGGING
 true
-$ java -jar lograte-0.1.0-SNAPSHOT-standalone.jar data/LogSources/u_ex17022801.log
+$ java -jar lograte-0.1.0-SNAPSHOT-standalone.jar /tmp/LogSources/u_ex17030112.log
 Checking the LOGGING env var
-2017-03-03 04:43:53 - Analyzing data/LogSources/u_ex17022801.log
-{"count":59,"start":"2017-02-28T01:00:58.000Z","end":"2017-02-28T01:58:58.000Z","rate-per-second":0.016954023,"duration-in-seconds":3480}
+2017-03-03 13:45:37 - Analyzing /tmp/LogSources/u_ex17030112.log
+{"message-count":475054,"start":"2017-03-01T12:00:00.000Z","end":"2017-03-01T12:59:59.000Z","rate-per-second":131.99611,"duration-in-seconds":3599}
 $
 ````
 
@@ -42,15 +42,15 @@ When we run this with a folder name, all the files under that folder will
 be analyzed, and the final summary result printed as a json string.
 
 ````$shell
-$ java -jar lograte-0.1.0-SNAPSHOT-standalone.jar data/LogSources
+$ java -jar lograte-0.1.0-SNAPSHOT-standalone.jar /tmp/LogSources
 Checking the LOGGING env var
-2017-03-03 04:43:19 - Analyzing data/LogSources/u_ex17022801.log
-2017-03-03 04:43:19 - 	messages: 59, seconds: 3480, rate: 0.016954
-2017-03-03 04:43:19 - Analyzing data/LogSources/u_ex17022802.log
-2017-03-03 04:43:19 - 	messages: 59, seconds: 3481, rate: 0.016949
-2017-03-03 04:43:19 - Analyzing data/LogSources/u_ex17022803.log
-2017-03-03 04:43:19 - 	messages: 59, seconds: 3480, rate: 0.016954
-{"total-rate":0.05085719935595989,"highest-rate":0.016954023,"count":177,"files":3}
+2017-03-03 13:47:07 - Analyzing /tmp/LogSources/u_ex17030112.log
+2017-03-03 13:47:08 - 	messages: 475054, seconds: 3599, rate: 131.996109
+2017-03-03 13:47:08 - Analyzing /tmp/LogSources/u_ex17030113.log
+2017-03-03 13:47:10 - 	messages: 601355, seconds: 3599, rate: 167.089462
+2017-03-03 13:47:10 - Analyzing /tmp/LogSources/u_ex17030114.log
+2017-03-03 13:47:12 - 	messages: 587527, seconds: 3599, rate: 163.247284
+{"average-rate":154.11096,"combined-duration":10797,"highest-rate":167.08946,"message-count":1663936,"file-count":3}
 $
 ````
 Note that this application does not attempt to correlate timestamps
