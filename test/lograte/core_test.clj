@@ -40,3 +40,12 @@
           {message-count :message-count rate :rate-per-second :as m} (process-file tmp-file)]
       (is (= 100 message-count))
       (is (= 100 (int rate))))))
+
+(deftest parsing-timestamps
+  (testing "Test that we parse log messages with standard and NCSA timestamps"
+    (is (= "2017-03-02T03:00:00.000Z"
+           (str (to-timestamp "98.95.53.167 - - [02/Mar/2017:03:00:00 -0500] \"GET /Substitute/Home HTTP/1.1\" 200 64819"))))
+    (is (= "2017-03-02T10:58:48.000Z"
+           (str (to-timestamp "2017-03-02 10:58:48,915 [38] DEBUG PhoneHandlerIvrStateCurator"))))
+    (is (nil? (to-timestamp "no timestamp here")))
+    (is (nil? (to-timestamp "# comment 2017-03-02T03:00:00.000Z")))))

@@ -6,9 +6,13 @@
             [clojure.data.json :as json])
   (:gen-class))
 
-;; Time format
-(def timestamp-line-regex #"\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.*")
+;; Time formats
+(def timestamp-line-regex #"\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}")
 (def custom-formatter (f/formatter "yyyy-MM-dd HH:mm:ss"))
+
+(def NCSA-timestamp-line-regex #"\d{2}/.{3}/\d{4}:\d{2}:\d{2}:\d{2}")
+(def NCSA-custom-formatter (f/formatter "dd/MMM/yyyy:HH:mm:ss"))
+
 (defonce logging (memoize (fn []
                             (println "Checking the LOGGING env var")
                             (not (nil? (System/getenv "LOGGING"))))))
@@ -18,10 +22,15 @@
        (println (format "%s - %s" (f/unparse custom-formatter (t/now)) (apply format args)))))
 
 (defn to-timestamp
-  "Match a line for an event timestamp. If not found, return nil, else just the real timestamp."
+  "Match a line for an event timestamp. If not found, return nil, else just the real timestamp.
+  Ignore lines starting with a # as comments"
   [line]
-  (if (re-matches timestamp-line-regex line)
-    (f/parse custom-formatter (subs line 0 19))))
+  ; First try the more common timestamp, then if no lock, the NCSA format, sometimes used by IIS
+  (if (not (.startsWith line "#"))
+    (if-let [timestamp (re-find timestamp-line-regex line)]
+      (f/parse custom-formatter timestamp)
+      (if-let [timestamp (re-find NCSA-timestamp-line-regex line)]
+        (f/parse NCSA-custom-formatter timestamp)))))
 
 (defn analyze-event-rate
   "Lazy read the lines from this reader, calculating the events per second, and return the analysis
@@ -58,6 +67,7 @@
                 (not (.isDirectory %))
                 (not (.startsWith (.getName %) "."))
                 (not (.endsWith (.getName %) ".zip"))
+                (not (.endsWith (.getName %) "NOTE.txt"))
                 (> (.length %) 0))
           (file-seq (io/file folder))))
 
