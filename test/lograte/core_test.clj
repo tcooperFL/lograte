@@ -23,20 +23,20 @@
 (deftest empty-file-test
   (testing "Be sure an empty file doesn't break things"
     (let [tmp-file (create-sample-file! 0)
-          {message-count :count rate :rate-per-second :as m} (process-file tmp-file)]
+          {message-count :message-count rate :rate-per-second :as m} (process-file tmp-file)]
       (is (= 0 message-count))
       (is (= 0 (int rate))))))
 
 (deftest single-event-file-test
   (testing "Be sure a file with just one message doesn't break things"
     (let [tmp-file (create-sample-file! 1)
-          {message-count :count rate :rate-per-second :as m} (process-file tmp-file)]
+          {message-count :message-count rate :rate-per-second :as m} (process-file tmp-file)]
       (is (= 1 message-count))
       (is (= 1 (int rate))))))
 
 (deftest log-file-test
   (testing "Test a relatively small quantity from a file"
     (let [tmp-file (create-sample-file! 100)
-          {message-count :count rate :rate-per-second :as m} (process-file tmp-file)]
+          {message-count :message-count rate :rate-per-second :as m} (process-file tmp-file)]
       (is (= 100 message-count))
       (is (= 100 (int rate))))))

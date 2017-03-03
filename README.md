@@ -53,8 +53,9 @@ Checking the LOGGING env var
 {"total-rate":0.05085719935595989,"highest-rate":0.016954023,"count":177,"files":3}
 $
 ````
-Note that the total rate reported is assuming worst case -- that these logs
-are generated concurrently, so the rates are additive.
+Note that this application does not attempt to correlate timestamps
+across files, so it can't tell you what the peak rate is at any given
+time.
 
 ### Bugs
 
@@ -62,7 +63,8 @@ are generated concurrently, so the rates are additive.
 
 * Give a sampling size less than the whole file
 * Output points representing 10, 20, ... 90 quartile rates on sample size
-* Output points showing average rate per sample size across the file
+* Output a graph showing rates over any given file.
+* Correlate times across files, to create an aggregate profile graph over time.
 * Determine what files are serially generated, and do not represent added concurrent throughput
 * Create audio tones corresponding to the event rate to provide distinct audio signature
 
