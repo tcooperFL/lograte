@@ -9,17 +9,34 @@
 ;; Time formats
 (def timestamp-line-regex #"\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}")
 (def custom-formatter (f/formatter "yyyy-MM-dd HH:mm:ss"))
+(def ncsa-timestamp-line-regex #"\d{2}/.{3}/\d{4}:\d{2}:\d{2}:\d{2}")
+(def ncsa-formatter (f/formatter "dd/MMM/yyyy:HH:mm:ss"))
+(def json-timestamp-line-regex #"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}")
+(def json-custom-formatter (f/formatter "yyyy-MM-dd'T'HH:mm:ss"))
 
-(def NCSA-timestamp-line-regex #"\d{2}/.{3}/\d{4}:\d{2}:\d{2}:\d{2}")
-(def NCSA-custom-formatter (f/formatter "dd/MMM/yyyy:HH:mm:ss"))
-
+; Lazy determine logging based on env var check
 (defonce logging (memoize (fn []
                             (println "Checking the LOGGING env var")
                             (not (nil? (System/getenv "LOGGING"))))))
 
-(defn log [& args]
+(defn log
+  "Log messages to the console if the logger is enabled"
+  [& args]
   (and (logging)
        (println (format "%s - %s" (f/unparse custom-formatter (t/now)) (apply format args)))))
+
+(defn std-to-timestamp [s]
+  (if-let [ts (re-find timestamp-line-regex s)]
+    (f/parse custom-formatter ts)))
+
+(defn ncsa-to-timestamp [s]
+  (if-let [ts (re-find ncsa-timestamp-line-regex s)]
+    (f/parse ncsa-formatter ts)))
+
+(defn json-to-timestamp [s]
+  (if (.startsWith s "{")
+    (if-let [ts (re-find json-timestamp-line-regex s)]
+      (f/parse json-custom-formatter ts))))
 
 (defn to-timestamp
   "Match a line for an event timestamp. If not found, return nil, else just the real timestamp.
@@ -27,10 +44,21 @@
   [line]
   ; First try the more common timestamp, then if no lock, the NCSA format, sometimes used by IIS
   (if (not (.startsWith line "#"))
-    (if-let [timestamp (re-find timestamp-line-regex line)]
-      (f/parse custom-formatter timestamp)
-      (if-let [timestamp (re-find NCSA-timestamp-line-regex line)]
-        (f/parse NCSA-custom-formatter timestamp)))))
+    (some #(% line) [json-to-timestamp std-to-timestamp ncsa-to-timestamp])))
+
+(defn min-timestamp [ts1 ts2]
+  (cond
+    (nil? ts1) ts2
+    (nil? ts2) ts1
+    :else (t/min-date ts1 ts2))
+  )
+
+(defn max-timestamp [ts1 ts2]
+  (cond
+    (nil? ts1) ts2
+    (nil? ts2) ts1
+    :else (t/max-date ts1 ts2))
+  )
 
 (defn analyze-event-rate
   "Lazy read the lines from this reader, calculating the events per second, and return the analysis
@@ -44,9 +72,8 @@
                     (reduce (fn [{n :message-count start :start end :end :as m} t]
                               (assoc m
                                 :message-count (if (nil? t) n (inc n))
-                                :start (or start t)
-                                :end (or t end)
-                                ))
+                                :start (min-timestamp start t)
+                                :end (max-timestamp t end)))
                             {:message-count 0 :start nil :end nil})
                     ))
         duration (or (and (:start result)

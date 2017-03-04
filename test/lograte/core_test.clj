@@ -48,4 +48,6 @@
     (is (= "2017-03-02T10:58:48.000Z"
            (str (to-timestamp "2017-03-02 10:58:48,915 [38] DEBUG PhoneHandlerIvrStateCurator"))))
     (is (nil? (to-timestamp "no timestamp here")))
-    (is (nil? (to-timestamp "# comment 2017-03-02T03:00:00.000Z")))))
+    (is (nil? (to-timestamp "# comment 2017-03-02T03:00:00.000Z")))
+    (is (= "2017-03-03T20:34:51.000Z"
+           (str (to-timestamp "{\"Id\":1010,\"context\":{\"TimeStamp\": \"3/3/2017 8:34:49 PM +00:00\"},\"timestamp\":\"2017-03-03T20:34:51.3395596+00:00\"}"))))))
